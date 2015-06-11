@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="marquee">
+<div class="container-fluid">
+<!--	<div class="photo-slide dropzone-previews"> -->
+<!--	<div class="photo-slide"> -->
+		<form id="drop" class="dropzone previews-container" action="/classify">
+			<div class="dz-message"></div>
+		</form>
+<!--	</div> -->
+</div>
+</header>
+{% endblock %}
+{% block extra_js %}
+<script src="/static/js/dropzone.js"></script>
+<script src="/static/js/upload.js"></script>
+{% endblock %}

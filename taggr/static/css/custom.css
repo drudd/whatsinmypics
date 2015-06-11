@@ -1,0 +1,28 @@
+/*
+.full {
+    background: url('/static/background.jpg') no-repeat center center fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    background-size: cover;
+    -o-background-size: cover;
+}
+*/
+
+.vertical-align {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+}
+
+.dropzone { border: 5px solid #000; border-radius: 40px; width: 300px; min-height: 300px; margin: 20px auto;}
+/* .photo-slide img { display: block; margin: 0px auto; } 
+.photo-slide p { margin: 10px; font-size: 14px; }
+*/
+
+.dz-image { margin: 20px auto;}
+.dz-file-preview { width: 300px; min-height: 300px; }
+.dz-drag-hover { border: 5px solid #ccc; }
+
+.dz-message { width:300px; min-height: 300px; }
+/* .dz-preview { width:300px; min-height: 300px; margin: 20px auto;} */
