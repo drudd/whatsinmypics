@@ -40,7 +40,7 @@ else:
 # load labels
 result = db.engine.execute("select label_index,label from placesCNN_labels")
 #labels = {r[0]:r[1] for r in result}
-labels = np.array([r[1] for r in result])
+labels = np.array([r[1].encode("ascii") for r in result])
 
 # initialize classifier based on pretrained data
 classifier = caffe.Classifier(MODEL_FILE,
@@ -53,4 +53,11 @@ classifier_lock = Lock()
 
 def predicted_label(prediction):
 #    return labels[prediction.argmax()]
-    return ",".join(labels[prediction > 0.1])
+    return list(labels[prediction > 0.1])
+
+def predicted_images(prediction):
+    # take the top tag
+    top = prediction.argmax()
+    print top
+    result = db.engine.execute("select filename from photos inner join placesCNN on photos.photo_id = placesCNN.photo_id where placesCNN.top = 193 order by rand() limit 3")
+    return [row[0] for row in result]

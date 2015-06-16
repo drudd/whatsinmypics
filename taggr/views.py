@@ -1,6 +1,7 @@
 import taggr
 from taggr import app
-from flask import render_template, request
+import json
+from flask import render_template, request, make_response 
 import os
 from PIL import Image
 import skimage
@@ -20,7 +21,9 @@ def classify():
             image_data = skimage.img_as_float(image_data).astype(np.float32)
             with taggr.classifier_lock:
                 prediction = taggr.classifier.predict([image_data])[0]
-                return taggr.predicted_label(prediction)
+                label = taggr.predicted_label(prediction)
+                images = ["/static/"+filename for filename in taggr.predicted_images(prediction)]
+                return make_response(json.dumps({"suggested_tags":label, "suggested_images":images})) 
         except IOError:
             return "Error: invalid file"
     else:
