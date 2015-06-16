@@ -2,12 +2,12 @@
 {% block content %}
 <header class="marquee">
 <div class="container-fluid" name="photo-container">
-<!--	<div class="photo-slide dropzone-previews"> -->
-<!--	<div class="photo-slide"> -->
 		<form id="drop" class="dropzone previews-container" action="/classify">
-			<div class="dz-message"></div>
+			<div class="dz-message text-center">
+				<h4>Click or drag an image to upload and classify</h4>
+				<button class="btn-primary btn-lg" onclick="return false;">Use a random example image</button>
+			</div>
 		</form>
-<!--	</div> -->
 </div>
 </header>
 {% endblock %}
