@@ -1,3 +1,3 @@
 #!/usr/bin/env python
-from taggr import app
+from whatsinmypics import app
 app.run(debug = True)

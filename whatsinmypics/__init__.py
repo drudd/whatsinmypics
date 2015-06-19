@@ -11,7 +11,7 @@ import skimage
 
 app = Flask(__name__)
 
-from taggr import views
+from whatsinmypics import views
 
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+pymysql://drudd:@localhost/flickr"
@@ -77,7 +77,7 @@ def predicted_images(prediction):
 def classify_image(image):
     if isinstance(image, basestring):
         input_file = "/static/"+image
-        image = "taggr/static/"+image
+        image = "whatsinmypics/static/"+image
     else:
         input_file = image.filename
         image = image.stream
