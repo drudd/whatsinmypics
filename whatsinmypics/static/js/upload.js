@@ -8,8 +8,7 @@ $(function() { Dropzone.options.drop = {
   init: function() {
     this.on("success", function(file, responseText) {
 	  $('.dz-progress').circleProgress('value', 1.0);
-	  var response = $.parseJSON(responseText);
-	  process_image(response);	
+	  process_image($.parseJSON(responseText));	
 	  $(".dz-progress").remove();
     });
 	this.on("addedfile", function(file) { 
@@ -53,10 +52,10 @@ $(function() { Dropzone.options.drop = {
 
 $(".random-button").click(function(e) {
 	$.getJSON("/random", function( data ) {
-      var img;
-      img = document.createElement("img");
+	  /* manually create image element (mimicking drag'n'drop uploader) */
+      var img = document.createElement("img");
 	  img.classList.add("dz-image");
-      img.src = data.input_file;
+      img.src = data.image_url;
 	  img.onload = (function(this_) {
 			var scale = 250./Math.max(this_.width, this_.height)
 			this_.width = scale*this_.width;
@@ -71,52 +70,71 @@ $(".random-button").click(function(e) {
 	  added_file();	
 	  process_image(data);
     });
-	
 	e.stopPropagation();
 });
 
+
 function process_image(response) {
-    var tag_html = "<div class=\"container-fluid tagform\"><select class=\"tag-select form-control\" multiple=\"multiple\">"; 
+	/* record classification vector for later searching */
+	window.classification_vector = response.classification_vector;
+    var tag_html = "<div class=\"container-fluid tagform\"><select id=\"tags\" class=\"tag-select form-control\" multiple=\"multiple\">"; 
 	var tags = response.suggested_tags;
 	for (var i = 0; i < tags.length; i++) {
 		tag_html += "<option selected>"+tags[i]+"</option>";
 	}
-	tag_html += "</select>\n";
-	//tag_html += "<button type=\"button\" class=\"btn 
-	tag_html += "</div><br/>";
+	tag_html += "</select>";
+	tag_html += "<button class=\"btn-default btn-lg\" type=\"button\" onclick=\"recommend_images();\">Find similar images</button>\n";
+	tag_html += "</div>";
 
-	var images = response.suggested_images;
-	tag_html += "<div class=\"container-fluid carousel-container\"><div id=\"carousel\" class=\"carousel slide\" data-ride=\"carousel\"><ol class=\"carousel-indicators\">\n";
-	for (var i = 0; i < images.length; i++) {
-		tag_html += "<li data-target=\"#carousel\" data-slide-to=\"" + i + "\"></li>\n";
-	}
-	tag_html += "</ol><div class=\"carousel-inner\" role=\"listbox\">\n";
-	for (var i = 0; i < images.length; i++) {
-        tag_html += "<div class=\"item" + ((i==0) ? " active" : "") + "\"><img src=\""+images[i]+"\"></div>\n";
-    }
+    tagElement = document.createElement("div");
+    tagElement.classList.add("row");
+    tagElement.classList.add("results");
+    tagElement.innerHTML = tag_html;
+    document.body.appendChild(tagElement);
+
+    $(".tag-select").select2({
+      tags: true,
+      tokenSeparators: [',']
+    });
+
+    $(".dz-progress").remove();
+}
+
+function recommend_images() {
+	$.getJSON(
+		"/search", 
+		{ 'tags': $("#tags").val(),
+		  'classification_vector': window.classification_vector },
+		function(response) {
+			alert(response);
+/*
+			var images = response.suggested_images;
+			var tag_html = "<div class=\"container-fluid carousel-container\"><div id=\"carousel\" class=\"carousel slide\" data-ride=\"carousel\"><ol class=\"carousel-indicators\">\n";
+			for (var i = 0; i < images.length; i++) {
+				tag_html += "<li data-target=\"#carousel\" data-slide-to=\"" + i + "\"></li>\n";
+			}
+			tag_html += "</ol><div class=\"carousel-inner\" role=\"listbox\">\n";
+			for (var i = 0; i < images.length; i++) {
+		        tag_html += "<div class=\"item" + ((i==0) ? " active" : "") + "\"><img src=\""+images[i]+"\"></div>\n";
+		    }
 	
-	tag_html += "<a class=\"left carousel-control\" href=\"#corousel\" role=\"button\" data-slide=\"prev\">\n";
-    tag_html += "  <span class=\"glyphicon glyphicon-chevron-left\" aria-hidden=\"true\"></span>\n";
-	tag_html += "  <span class=\"sr-only\">Previous</span>\n";
-    tag_html += "</a>\n";
-    tag_html += "<a class=\"right carousel-control\" href=\"#carousel\" role=\"button\" data-slide=\"next\">\n";
-    tag_html += "  <span class=\"glyphicon glyphicon-chevron-right\" aria-hidden=\"true\"></span>\n";
-    tag_html += "  <span class=\"sr-only\">Next</span>\n";
-    tag_html += "</a>\n";
-	tag_html += "</div></div>\n";
+			tag_html += "<a class=\"left carousel-control\" href=\"#corousel\" role=\"button\" data-slide=\"prev\">\n";
+		    tag_html += "  <span class=\"glyphicon glyphicon-chevron-left\" aria-hidden=\"true\"></span>\n";
+			tag_html += "  <span class=\"sr-only\">Previous</span>\n";
+		    tag_html += "</a>\n";
+		    tag_html += "<a class=\"right carousel-control\" href=\"#carousel\" role=\"button\" data-slide=\"next\">\n";
+		    tag_html += "  <span class=\"glyphicon glyphicon-chevron-right\" aria-hidden=\"true\"></span>\n";
+		    tag_html += "  <span class=\"sr-only\">Next</span>\n";
+		    tag_html += "</a>\n";
+			tag_html += "</div></div>\n";
 
-	tagElement = document.createElement("div");
-	tagElement.classList.add("row");
-	tagElement.classList.add("results");
-	tagElement.innerHTML = tag_html;
-	document.body.appendChild(tagElement);
-
-	$(".tag-select").select2({
-	  tags: true,
-	  tokenSeparators: [',']
+			tagElement = document.createElement("div");
+			tagElement.classList.add("row");
+			tagElement.classList.add("results");
+			tagElement.innerHTML = tag_html;
+			document.body.appendChild(tagElement);
+*/
 	});
-	
-	$(".dz-progress").remove();
 }
 
 function added_file() {
