@@ -6,46 +6,11 @@
     -o-background-size: cover;
 }
 
-/*
-.vertical-align {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: row;
-}
-*/
-
-/* .dropzone { border: 5px solid #000; border-radius: 40px; width: 300px; min-height: 300px; margin: 20px auto;} */
 .dropzone { border: 5px solid #FFF; border-radius: 40px; width: 300px; min-height: 300px; margin: 20px auto;}
-
-/* .dz-image { margin: 20px auto;} */
-/* .dz-file-preview { width: 300px; min-height: 300px; } */
 .dz-drag-hover { border: 5px solid #ccc; }
 .dz-message { width:290px; min-height: 290px; display: flex; align-items: center; flex-direction: column; justify-content: space-around;}
 .dz-preview { width:290px; min-height: 290px; display: flex; align-items: center; flex-direction: column; justify-content: space-around;}
 .dz-progress { width:290px; min-height: 290px; z-index: 3; display: block; float:right; top:25px; position: absolute; display: flex; align-items: center; flex-direction: column; justify-content: space-around;}
 
-.tagform { display: flex; align-items: center; flex-direction: row; justify-content: space-around; } 
+.tag-form { display: flex; align-items: center; flex-direction: row; justify-content: space-around; } 
 .tag-select { width: 400px; }
-
-.suggestions { display: flex; align-items: center; flex-direction: column; justify-content: space-around; }
-.carousel-container { display: flex; align-items: center; flex-direction: column; justify-content: space-around; }
-
-.carousel {
-/*  height: 300px;
-  width: 300px;*/
-/*  margin-bottom: 20px; */
-}
-/* Declare heights because of positioning of img element */
-.carousel .item {
-  height: 100%;
-/* background-color: #777; */
-}
-.carousel-inner > .item > img {
-/*
-  position: absolute;
-  top: 0;
-  min-width: 400px;
-  height: 400px;
-*/
-}
