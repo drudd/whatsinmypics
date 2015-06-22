@@ -77,13 +77,18 @@ $(".random-button").click(function(e) {
 function process_image(response) {
 	/* record classification vector for later searching */
 	window.classification_vector = response.classification_vector;
-    var tag_html = "<div class=\"container-fluid tagform\"><select id=\"tags\" class=\"tag-select form-control\" multiple=\"multiple\">"; 
+//    var tag_html = "<div class=\"container-fluid tag-form\"><select id=\"tags\" class=\"tag-select form-control input-large\" multiple=\"multiple\">"; 
+
+	var tag_html = "<div class=\"container-fluid tag-form\">";
+	tag_html += "<div class=\"input-group input-group select2-bootstrap-append\">"
+	tag_html += "<select id=\"tags\" class=\"tag-select form-control select2-multiple\" multiple=\"multiple\">"
 	var tags = response.suggested_tags;
 	for (var i = 0; i < tags.length; i++) {
 		tag_html += "<option selected>"+tags[i]+"</option>";
 	}
 	tag_html += "</select>";
-	tag_html += "<button class=\"btn-default btn-lg\" type=\"button\" onclick=\"recommend_images();\">Find similar images</button>\n";
+	tag_html += "<span class=\"input-group-btn\"><button class=\"btn btn-default\" type=\"button\" onclick=\"recommend_images();\">Find similar images</button></span></div>\n";
+//	tag_html += "<button class=\"btn-default btn-lg\" type=\"button\" onclick=\"recommend_images();\">Find similar images</button>\n";
 	tag_html += "</div>";
 
     tagElement = document.createElement("div");
@@ -92,10 +97,13 @@ function process_image(response) {
     tagElement.innerHTML = tag_html;
     document.body.appendChild(tagElement);
 
-    $(".tag-select").select2({
+    $("#tags").select2({
+	  theme: "bootstrap",
       tags: true,
       tokenSeparators: [',']
     });
+
+	$(".select2-container").classList.add("input-lg");
 
     $(".dz-progress").remove();
 }

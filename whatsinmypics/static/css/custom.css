@@ -12,5 +12,10 @@
 .dz-preview { width:290px; min-height: 290px; display: flex; align-items: center; flex-direction: column; justify-content: space-around;}
 .dz-progress { width:290px; min-height: 290px; z-index: 3; display: block; float:right; top:25px; position: absolute; display: flex; align-items: center; flex-direction: column; justify-content: space-around;}
 
-.tag-form { display: flex; align-items: center; flex-direction: row; justify-content: space-around; } 
-.tag-select { width: 400px; }
+.tag-form { display: flex; align-items: center; flex-direction: row; justify-content: center; width: 800px; } 
+/* .tag-select { width: 400px } */
+
+/* .select2{ background-color: #FFF; height: 36px } */
+
+.select2-selection__rendered { background-color: #ffffff; height: 36px; width: 800px; }
+.select2-selection__choice { background-color: #CCC;}
