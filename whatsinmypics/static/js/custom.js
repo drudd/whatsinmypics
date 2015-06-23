@@ -103,19 +103,18 @@ function process_image(response) {
       tokenSeparators: [',']
     });
 
-	$(".select2-container").classList.add("input-lg");
+	//$(".select2-container").classList.add("input-lg");
 
     $(".dz-progress").remove();
 }
 
 function recommend_images() {
+/*
 	$.getJSON(
 		"/search", 
 		{ 'tags': $("#tags").val(),
 		  'classification_vector': window.classification_vector },
 		function(response) {
-			alert(response);
-/*
 			var images = response.suggested_images;
 			var tag_html = "<div class=\"container-fluid carousel-container\"><div id=\"carousel\" class=\"carousel slide\" data-ride=\"carousel\"><ol class=\"carousel-indicators\">\n";
 			for (var i = 0; i < images.length; i++) {
@@ -138,15 +137,35 @@ function recommend_images() {
 
 			tagElement = document.createElement("div");
 			tagElement.classList.add("row");
-			tagElement.classList.add("results");
+			tagElement.classList.add("searchresults");
 			tagElement.innerHTML = tag_html;
 			document.body.appendChild(tagElement);
+		}
+	);
 */
+	console.log("recommending");
+		
+	tagElement = document.createElement("div");
+	tagElement.classList.add("row");
+	tagElement.classList.add("searchresults");
+	//tagElement.innerHTML = tag_html;
+	document.body.appendChild(tagElement);	
+
+	$('searchresults').jscroll({
+		debug: true,
+	    loadingHtml: '<button class="btn btn-lg btn-warning"><span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span> Loading...</button>',
+		autoTrigger: true,
+		padding: 20,
+		callback: function() {
+			console.log("callback");
+		}
 	});
+
 }
 
 function added_file() {
 	$(".dz-message").detach();
+	$(".instructions").remove();
 	$(".dz-preview").slice(0,-1).remove();
 	$(".results").remove();
 }

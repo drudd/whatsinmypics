@@ -8,7 +8,7 @@ import os
 @app.route("/index.html")
 @app.route("/index")
 def front_page():
-    return render_template('index.html', title="WhatsInMy.Pics")
+    return render_template('index.html', title="WhatsInMy.pics")
 
 @app.route('/classify', methods=['POST'])
 def classify():
@@ -30,6 +30,10 @@ def search():
     tags = request.values.getlist('tags[]')
     classification_vector = request.values.get('classification_vector')
     return make_response(json.dumps(whatsinmypics.model.predict_images(tags,classification_vector)))
+
+@app.route("/slides")
+def slides():
+    return render_template("slides.html", title="WhatsInMy.pics")
 
 def valid_filename(filename):
     valid_ext = [".jpg",".png",".gif",".jpeg"]

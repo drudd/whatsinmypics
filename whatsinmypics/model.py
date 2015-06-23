@@ -46,21 +46,22 @@ classifier = caffe.Classifier(MODEL_FILE,
                               image_dims=(IMG_DIM, IMG_DIM))
 classifier_lock = Lock()
 
+result = db.engine.execute("select label_index,label from placesCNN_labels")
+labels = np.array([r[1].encode("ascii") for r in result])
+
 def predicted_tags(classification):
-    return ["hi", "there"]    
+    return list(labels[classification > 0.2])  
 
 def predict_images(tags, classification_vector):
     classification = np.frombuffer(base64.decodestring(classification_vector), np.float32)
 
-    print tags, classification
     # take the top tag
-    #top = prediction.argmax()
-    #result = db.engine.execute("""select yfcc.photo_id from yfcc
-    #                              inner join placesCNN on yfcc.photo_id = placesCNN.photo_id
-    #                              where placesCNN.top = {} order by rand() limit 3""".format(top))
-    #result = db.engine.execute("""select photo_id from placesCNN where top = {} order by rand() limit 3""".format(top))
-    #return [row[0] for row in result]
-    return ["done"]
+    top = classification.argmax()
+    result = db.engine.execute("""select yfcc.photo_id from yfcc
+                                  inner join placesCNN on yfcc.photo_id = placesCNN.photo_id
+                                  where placesCNN.top = {} order by rand() limit 3""".format(top))
+    result = db.engine.execute("""select photo_id from placesCNN where top = {} order by rand() limit 3""".format(top))
+    return {"suggested_images": [whatsinmypics.image_url(row[0]) for row in result]}
 
 def classify_image(image):
     if isinstance(image, int):
