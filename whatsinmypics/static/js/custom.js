@@ -109,7 +109,6 @@ function process_image(response) {
 }
 
 function recommend_images() {
-/*
 	$.getJSON(
 		"/search", 
 		{ 'tags': $("#tags").val(),
@@ -142,9 +141,7 @@ function recommend_images() {
 			document.body.appendChild(tagElement);
 		}
 	);
-*/
-	console.log("recommending");
-		
+/*	
 	tagElement = document.createElement("div");
 	tagElement.classList.add("row");
 	tagElement.classList.add("searchresults");
@@ -160,7 +157,7 @@ function recommend_images() {
 			console.log("callback");
 		}
 	});
-
+*/
 }
 
 function added_file() {
