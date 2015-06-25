@@ -10,6 +10,7 @@ import caffe
 from gensim import models
 from PIL import Image
 import skimage
+from collections import defaultdict
 
 # classifier configuration
 MODELNAME = "placesCNN"
@@ -20,7 +21,10 @@ MEAN = MODELDIR + "/places_mean.mat"
 IMG_DIM = 256
 
 # LDA configuration
-LDAMODEL = "../models/lda/lda_[1300000,0.01,0.3,10,75]-20150619020128"
+LDAMODEL = "../train/output/lda_[1250000,200]-20150622215822"
+classification_threshold = 0.2
+suggestion_threshold = 1e-5
+topN = 3
 
 # load mean image
 ext = os.path.splitext(MEAN)[1]
@@ -46,11 +50,32 @@ classifier = caffe.Classifier(MODEL_FILE,
                               image_dims=(IMG_DIM, IMG_DIM))
 classifier_lock = Lock()
 
+
+# load LDA
+lda = models.LdaMulticore.load(LDAMODEL)
+word2id = {t:i for i,t in lda.id2word.items()}
+
 result = db.engine.execute("select label_index,label from placesCNN_labels")
 labels = np.array([r[1].encode("ascii") for r in result])
 
 def predicted_tags(classification):
-    return list(labels[classification > 0.2])  
+    # translate classification into tag_ids and weights
+    try:
+        doc = [[tag_id, int(weight/classification_threshold)] 
+               for tag_id, weight in enumerate(classification) if weight > classification_threshold]
+  
+        # add contribution from all terms in all similar LDA topics
+        tag_suggestions = defaultdict(int)
+        for topic, weight in lda[doc]:
+            for weight, term in lda.show_topic(topic):
+                if not "class:" in term:
+                    tag_suggestions[term] += weight
+
+        # turn weights into actual suggestions and take topN values as suggestion
+        return [tag for tag in sorted(tag_suggestions, key=tag_suggestions.get, reverse=True)
+                if tag_suggestions[tag] > suggestion_threshold][:topN] 
+    except IndexError:
+        return []
 
 def predict_images(tags, classification_vector):
     classification = np.frombuffer(base64.decodestring(classification_vector), np.float32)
