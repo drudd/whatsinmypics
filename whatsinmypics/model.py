@@ -12,6 +12,7 @@ from PIL import Image
 import skimage
 from collections import defaultdict
 
+# LDA configuration
 classification_threshold = app.config['LDA_CLASSIFICATION_THRESHOLD']
 suggestion_threshold = app.config['LDA_SUGGESTION_THRESHOLD']
 topN = app.config['LDA_TOPN']
