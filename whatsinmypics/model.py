@@ -12,29 +12,19 @@ from PIL import Image
 import skimage
 from collections import defaultdict
 
-# classifier configuration
-MODELNAME = "placesCNN"
-MODELDIR = "../models/placesCNN/"
-MODEL_FILE = MODELDIR + "places205CNN_deploy_upgraded.prototxt"
-PRETRAINED_FILE = MODELDIR + "places205CNN_iter_300000_upgraded.caffemodel"
-MEAN = MODELDIR + "/places_mean.mat"
-IMG_DIM = 256
-
-# LDA configuration
-LDAMODEL = "../train/output/lda_[1250000,200]-20150622215822"
-classification_threshold = 0.2
-suggestion_threshold = 1e-5
-topN = 3
+classification_threshold = app.config['LDA_CLASSIFICATION_THRESHOLD']
+suggestion_threshold = app.config['LDA_SUGGESTION_THRESHOLD']
+topN = app.config['LDA_TOPN']
 
 # load mean image
-ext = os.path.splitext(MEAN)[1]
+ext = os.path.splitext(app.config['CNN_MEAN_FILE'])[1]
 if ext == ".mat":
-    mean_image = loadmat(MEAN)['image_mean'].mean(0).mean(0)
+    mean_image = loadmat(app.config['CNN_MEAN_FILE'])['image_mean'].mean(0).mean(0)
 elif ext == ".npy":
-    mean_image = np.load(MEAN).mean(1).mean(1)
+    mean_image = np.load(app.config['CNN_MEAN_FILE']).mean(1).mean(1)
 elif ext == ".binaryproto":
     blob = caffe.proto.caffe_pb2.BlobProto()
-    data = open(MEAN, 'rb' ).read()
+    data = open(app.config['CNN_MEAN_FILE'], 'rb').read()
     blob.ParseFromString(data)
     mean_image = np.array( caffe.io.blobproto_to_array(blob) )[0].mean(1).mean(1)
 else:
@@ -42,21 +32,17 @@ else:
     sys.exit(1)
 
 # initialize classifier based on pretrained data
-classifier = caffe.Classifier(MODEL_FILE,
-                              PRETRAINED_FILE,
+classifier = caffe.Classifier(app.config['CNN_MODEL_FILE'],
+                              app.config['CNN_PRETRAINED_FILE'],
                               mean=mean_image,
                               channel_swap=(2,1,0),
                               raw_scale=255,
-                              image_dims=(IMG_DIM, IMG_DIM))
+                              image_dims=(app.config['CNN_IMG_DIM'], app.config['CNN_IMG_DIM']))
 classifier_lock = Lock()
 
-
 # load LDA
-lda = models.LdaMulticore.load(LDAMODEL)
+lda = models.LdaMulticore.load(app.config['LDA_MODEL_FILE'])
 word2id = {t:i for i,t in lda.id2word.items()}
-
-result = db.engine.execute("select label_index,label from placesCNN_labels")
-labels = np.array([r[1].encode("ascii") for r in result])
 
 def predicted_tags(classification):
     # translate classification into tag_ids and weights

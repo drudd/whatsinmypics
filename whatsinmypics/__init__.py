@@ -2,10 +2,15 @@ import os
 from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
 
-app = Flask(__name__)
+app = Flask(__name__, instance_relative_config=True)
 
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
-app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+pymysql://drudd:@localhost/yfcc"
+# Load the default configuration
+#app.config.from_object('config.default')
+
+# Load the configuration from the instance folder
+app.config.from_pyfile('config.py')
+
+# connect to the database
 db = SQLAlchemy(app)
 
 def image_url(photo_id, ext="jpg"):
