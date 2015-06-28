@@ -12,11 +12,6 @@ from PIL import Image
 import skimage
 from collections import defaultdict
 
-# LDA configuration
-classification_threshold = app.config['LDA_CLASSIFICATION_THRESHOLD']
-suggestion_threshold = app.config['LDA_SUGGESTION_THRESHOLD']
-topN = app.config['LDA_TOPN']
-
 # load mean image
 ext = os.path.splitext(app.config['CNN_MEAN_FILE'])[1]
 if ext == ".mat":
@@ -45,6 +40,11 @@ classifier_lock = Lock()
 lda = models.LdaMulticore.load(app.config['LDA_MODEL_FILE'])
 word2id = {t:i for i,t in lda.id2word.items()}
 
+# LDA configuration
+classification_threshold = app.config['LDA_CLASSIFICATION_THRESHOLD']
+suggestion_threshold = app.config['LDA_SUGGESTION_THRESHOLD']
+topN = app.config['LDA_TOPN']
+
 def predicted_tags(classification):
     # translate classification into tag_ids and weights
     try:
@@ -69,21 +69,15 @@ def predict_images(tags, classification_vector):
 
     # take the top tag
     top = classification.argmax()
-    result = db.engine.execute("""select yfcc.photo_id from yfcc
+    result = db.engine.execute("""select yfcc.photo_id, yfcc.download_url from yfcc
                                   inner join placesCNN on yfcc.photo_id = placesCNN.photo_id
                                   where placesCNN.top = {} order by rand() limit 3""".format(top))
-    result = db.engine.execute("""select photo_id from placesCNN where top = {} order by rand() limit 3""".format(top))
-    return {"suggested_images": [whatsinmypics.image_url(row[0]) for row in result]}
+    #result = db.engine.execute("""select photo_id from placesCNN where top = {} order by rand() limit 3""".format(top))
+    return {"suggested_images": [row[1] for row in result]}
 
 def classify_image(image):
-    if isinstance(image, int):
-        image_path = image_url(image)
-        image = image_filename(image)
-    else:
-        image_path = image.filename
-        image = image.stream
-
-    image_data = np.array(Image.open(image))
+    image_path = image.filename
+    image_data = np.array(Image.open(image.stream))
     image_data = skimage.img_as_float(image_data).astype(np.float32)
     with classifier_lock:
         classification = classifier.predict([image_data])[0]
@@ -92,7 +86,15 @@ def classify_image(image):
                 "image_url":image_path}
 
 def random_image():
-    result = db.engine.execute("""select photo_id from placesCNN
+    class_columns = ["Label{}".format(i) for i in range(205)]
+
+    result = db.engine.execute("""select placesCNN.photo_id, download_url, {} from placesCNN
+				  inner join yfcc on placesCNN.photo_id = yfcc.photo_id
                                   where top in (121, 122, 47, 78, 92, 128, 137, 149, 156, 163, 171, 169, 201)
-                                  order by rand() limit 1""")
-    return classify_image(int(result.first()[0]))
+                                  order by rand() limit 1""".format(",".join(class_columns)))
+    row = result.first()
+    classification = np.array(row[2:])
+    
+    return {"suggested_tags":predicted_tags(classification),
+            "classification_vector":base64.b64encode(np.ascontiguousarray(classification).data),
+            "image_url":row[1]}

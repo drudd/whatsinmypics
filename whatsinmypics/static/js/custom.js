@@ -34,7 +34,7 @@ $(function() { Dropzone.options.drop = {
 	});
   },
   resize: function(file) {
-	var scale = 250./Math.max(file.width, file.height)
+    var scale = 250./Math.max(file.width, file.height)
     var resizeInfo = {
           srcX: 0,
           srcY: 0,
@@ -57,7 +57,7 @@ $(".random-button").click(function(e) {
 	  img.classList.add("dz-image");
       img.src = data.image_url;
 	  img.onload = (function(this_) {
-			var scale = 250./Math.max(this_.width, this_.height)
+			var scale = 250./Math.max(this_.width, this_.height,250.)
 			this_.width = scale*this_.width;
 			this_.height = scale*this_.height;
 		});
