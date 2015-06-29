@@ -86,15 +86,18 @@ def classify_image(image):
                 "image_url":image_path}
 
 def random_image():
-    class_columns = ["Label{}".format(i) for i in range(205)]
+    result = db.engine.execute("""select photo_id from sample order by rand() limit 1""")
+    photo_id = result.first()[0]
 
-    result = db.engine.execute("""select placesCNN.photo_id, download_url, {} from placesCNN
-				  inner join yfcc on placesCNN.photo_id = yfcc.photo_id
-                                  where top in (121, 122, 47, 78, 92, 128, 137, 149, 156, 163, 171, 169, 201)
-                                  order by rand() limit 1""".format(",".join(class_columns)))
+    class_columns = ",".join("Label{}".format(i) for i in range(205))
+    result = db.engine.execute("""select yfcc.download_url, {}
+                                  from placesCNN inner join yfcc on placesCNN.photo_id = yfcc.photo_id
+                                  where yfcc.photo_id = {}""".format(class_columns, photo_id))
+
     row = result.first()
-    classification = np.array(row[2:])
-    
+    download_url = row[0]
+    classification = np.array(row[1:])
+
     return {"suggested_tags":predicted_tags(classification),
             "classification_vector":base64.b64encode(np.ascontiguousarray(classification).data),
-            "image_url":row[1]}
+            "image_url":download_url}

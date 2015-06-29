@@ -13,6 +13,9 @@ app.config.from_pyfile('config.py')
 # connect to the database
 db = SQLAlchemy(app)
 
+# cache number of photos
+num_photos = int(db.engine.execute("select count(*) from sample").first()[0])
+
 def image_url(photo_id, ext="jpg"):
     prefix1 = str(photo_id)[-2:]
     prefix2 = str(photo_id)[-4:-2]

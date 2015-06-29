@@ -34,7 +34,7 @@ $(function() { Dropzone.options.drop = {
 	});
   },
   resize: function(file) {
-    var scale = 250./Math.max(file.width, file.height)
+    var scale = 260./Math.max(file.width, file.height)
     var resizeInfo = {
           srcX: 0,
           srcY: 0,
@@ -53,24 +53,24 @@ $(function() { Dropzone.options.drop = {
 $(".random-button").click(function(e) {
 	$.getJSON("/random", function( data ) {
 	  /* manually create image element (mimicking drag'n'drop uploader) */
-      var img = document.createElement("img");
-	  img.classList.add("dz-image");
+      var child = document.createElement("div");
+      child.classList.add("dz-preview");
+      var img = new Image();
+      img.classList.add("dz-image");
+      img.onload = function() {
+	if ( img.height > img.width ) {
+		img.height = 260;
+	} else {
+		img.width = 260;
+	}
+        document.getElementById("drop").appendChild(child);
+	added_file();
+	process_image(data);
+      };
+      child.appendChild(img);
       img.src = data.image_url;
-	  img.onload = (function(this_) {
-			var scale = 250./Math.max(this_.width, this_.height,250.)
-			this_.width = scale*this_.width;
-			this_.height = scale*this_.height;
-		});
-
-	  child = document.createElement("div");
-	  child.classList.add("dz-preview");
-	  child.appendChild(img);
-	  document.getElementById("drop").appendChild(child);
-
-	  added_file();	
-	  process_image(data);
     });
-	e.stopPropagation();
+    e.stopPropagation();
 });
 
 
