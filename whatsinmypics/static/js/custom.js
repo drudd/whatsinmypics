@@ -109,6 +109,7 @@ function process_image(response) {
 }
 
 function recommend_images() {
+	$(".searchresults").remove();	
 	$.getJSON(
 		"/search", 
 		{ 'tags': $("#tags").val(),
@@ -165,6 +166,7 @@ function added_file() {
 	$(".instructions").remove();
 	$(".dz-preview").slice(0,-1).remove();
 	$(".results").remove();
+	$(".searchresults").remove();
 }
 
 $(document).bind("dragover", function(e) {
