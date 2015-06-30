@@ -7,7 +7,8 @@ from threading import Lock
 import numpy as np
 from scipy.io import loadmat
 import caffe
-from gensim import models
+from gensim import models, similarities
+from nltk.stem import WordNetLemmatizer
 from PIL import Image
 import skimage
 from collections import defaultdict
@@ -40,6 +41,10 @@ classifier_lock = Lock()
 lda = models.LdaMulticore.load(app.config['LDA_MODEL_FILE'])
 word2id = {t:i for i,t in lda.id2word.items()}
 
+lda_index = similarities.MatrixSimilarity.load(app.config['LDA_INDEX_FILE'])
+lda_index.num_best = app.config('NUM_SUGGESTED_IMAGES')
+lda_index_photos = np.load(app.config['LDA_INDEX_INDEX_FILE'])
+
 # LDA configuration
 classification_threshold = app.config['LDA_CLASSIFICATION_THRESHOLD']
 suggestion_threshold = app.config['LDA_SUGGESTION_THRESHOLD']
@@ -67,12 +72,20 @@ def predicted_tags(classification):
 def predict_images(tags, classification_vector):
     classification = np.frombuffer(base64.decodestring(classification_vector), np.float32)
 
-    # take the top tag
+    # convert document into bow
+    user_tags = [[word2id[tag], 1] for tag in [lemma.lemmatize(tag) for tag in taglist]
+                 if tag in word2id]
+    class_tags = [[tag_id, int(weight/classification_threshold)]
+                  for tag_id, weight in enumerate(classification)
+                  if weight > classification_threshold]
+    doc = user_tags + class_tags
+
+    # identify similar documents
+    photo_ids = [lda_index_index[doc_id] for doc_id, weight in lda_index[doc]]
+
     top = classification.argmax()
-    result = db.engine.execute("""select yfcc.photo_id, yfcc.download_url from yfcc
-                                  inner join placesCNN on yfcc.photo_id = placesCNN.photo_id
-                                  where placesCNN.top = {} order by rand() limit 3""".format(top))
-    #result = db.engine.execute("""select photo_id from placesCNN where top = {} order by rand() limit 3""".format(top))
+    result = db.engine.execute("""select download_url from yfcc
+                                  where photo_id in ({})""".format(",".join(str(pid) for pid in photo_ids))
     return {"suggested_images": [row[1] for row in result]}
 
 def classify_image(image):
