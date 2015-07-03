@@ -1,6 +1,7 @@
 import whatsinmypics
 from whatsinmypics import app, model
 from flask import render_template, request, make_response 
+import base64
 import json
 import os
 
@@ -23,13 +24,16 @@ def classify():
 
 @app.route('/random', methods=['GET'])
 def random_example():
+    image_response = model.random_image()
+    
     return make_response(json.dumps(model.random_image()))
 
 @app.route('/search')
 def search():
     tags = request.values.getlist('tags[]')
     classification_vector = request.values.get('classification_vector')
-    return make_response(json.dumps(model.predict_images(tags,classification_vector)))
+    classification_vector = np.frombuffer(base64.b64decode(classification_vector))
+    return make_response(json.dumps(model.predict_images(tags, classification_vector)))
 
 @app.route("/slides")
 def slides():

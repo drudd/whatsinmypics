@@ -2,7 +2,6 @@ import whatsinmypics
 from whatsinmypics import app, db, image_url, image_filename
 
 import os
-import base64
 from threading import Lock
 import numpy as np
 from scipy.io import loadmat
@@ -69,9 +68,7 @@ def predicted_tags(classification):
     except IndexError:
         return []
 
-def predict_images(tags, classification_vector):
-    classification = np.frombuffer(base64.decodestring(classification_vector), np.float32)
-
+def predict_images(tags, classification):
     # convert document into bow
     user_tags = [[word2id[tag], 1] for tag in [lemma.lemmatize(tag) for tag in taglist]
                  if tag in word2id]
@@ -94,8 +91,9 @@ def classify_image(image):
     image_data = skimage.img_as_float(image_data).astype(np.float32)
     with classifier_lock:
         classification = classifier.predict([image_data])[0]
-        return {"suggested_tags":predicted_tags(classification), 
-                "classification_vector":base64.b64encode(np.ascontiguousarray(classification).data),
+        return {"suggested_tags":predicted_tags(classification),
+                "classification_vector":classification,
+                #"classification_vector":base64.b64encode(np.ascontiguousarray(classification).data),
                 "image_url":image_path}
 
 def random_image():
@@ -112,5 +110,6 @@ def random_image():
     classification = np.array(row[1:])
 
     return {"suggested_tags":predicted_tags(classification),
-            "classification_vector":base64.b64encode(np.ascontiguousarray(classification).data),
+            "classification_vector":classification,
+            #"classification_vector":base64.b64encode(np.ascontiguousarray(classification).data),
             "image_url":download_url}
