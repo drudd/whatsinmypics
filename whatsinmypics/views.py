@@ -4,6 +4,8 @@ from flask import render_template, request, make_response
 import base64
 import json
 import os
+import numpy as np
+import base64
 
 @app.route("/")
 @app.route("/index.html")
@@ -25,8 +27,7 @@ def classify():
 @app.route('/random', methods=['GET'])
 def random_example():
     image_response = model.random_image()
-    
-    return make_response(json.dumps(model.random_image()))
+    return make_response(json.dumps(image_response)
 
 @app.route('/search')
 def search():
