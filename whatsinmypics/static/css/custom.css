@@ -10,7 +10,7 @@
 .dz-drag-hover { border: 5px solid #ccc; }
 .dz-message { width:290px; min-height: 290px; display: flex; align-items: center; flex-direction: column; justify-content: space-around;}
 .dz-preview { width:290px; min-height: 290px; display: flex; align-items: center; flex-direction: column; justify-content: space-around;}
-.dz-progress { width:290px; min-height: 290px; z-index: 3; display: block; float:right; top:100px; position: absolute; display: flex; align-items: center; flex-direction: column; justify-content: space-around;}
+.dz-progress { width:290px; min-height: 290px; z-index: 3; display: block; float:center; top:100px; position: absolute; display: flex; align-items: center; flex-direction: column; justify-content: center;}
 
 .tag-form { display: flex; align-items: center; flex-direction: row; justify-content: center; width: 800px; } 
 .select2-selection__rendered { background-color: #ffffff; height: 36px; width: 800px; background-color: rgba(0,0,0,0.2); }

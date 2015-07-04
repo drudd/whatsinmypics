@@ -42,8 +42,10 @@ lda = models.LdaMulticore.load(app.config['LDA_MODEL_FILE'])
 word2id = {t:i for i,t in lda.id2word.items()}
 
 lda_index = similarities.MatrixSimilarity.load(app.config['LDA_INDEX_FILE'])
-lda_index.num_best = app.config('NUM_SUGGESTED_IMAGES')
-lda_index_photos = np.load(app.config['LDA_INDEX_INDEX_FILE'])
+lda_index.num_best = app.config['NUM_SUGGESTED_IMAGES']
+lda_index_index = np.load(app.config['LDA_INDEX_INDEX_FILE'])
+
+lemma = WordNetLemmatizer()
 
 # LDA configuration
 classification_threshold = app.config['LDA_CLASSIFICATION_THRESHOLD']
@@ -69,11 +71,9 @@ def predicted_tags(classification):
     except IndexError:
         return []
 
-def predict_images(tags, classification_vector):
-    classification = np.frombuffer(base64.decodestring(classification_vector), np.float32)
-
+def predict_images(tags, classification):
     # convert document into bow
-    user_tags = [[word2id[tag], 1] for tag in [lemma.lemmatize(tag) for tag in taglist]
+    user_tags = [[word2id[tag], 1] for tag in [lemma.lemmatize(tag) for tag in tags]
                  if tag in word2id]
     class_tags = [[tag_id, int(weight/classification_threshold)]
                   for tag_id, weight in enumerate(classification)
@@ -81,12 +81,11 @@ def predict_images(tags, classification_vector):
     doc = user_tags + class_tags
 
     # identify similar documents
-    photo_ids = [lda_index_index[doc_id] for doc_id, weight in lda_index[doc]]
+    photo_ids = [lda_index_index[doc_id] for doc_id, weight in lda_index[lda[doc]]]
 
-    top = classification.argmax()
     result = db.engine.execute("""select download_url from yfcc
-                                  where photo_id in ({})""".format(",".join(str(pid) for pid in photo_ids))
-    return {"suggested_images": [row[1] for row in result]}
+                                  where photo_id in ({})""".format(",".join(str(pid) for pid in photo_ids)))
+    return {"suggested_images": [row[0] for row in result]}
 
 def classify_image(image):
     image_path = image.filename
@@ -95,7 +94,7 @@ def classify_image(image):
     with classifier_lock:
         classification = classifier.predict([image_data])[0]
         return {"suggested_tags":predicted_tags(classification), 
-                "classification_vector":base64.b64encode(np.ascontiguousarray(classification).data),
+                "classification_vector":base64.b64encode(np.ascontiguousarray(classification.astype(np.float32)).data),
                 "image_url":image_path}
 
 def random_image():
@@ -112,5 +111,5 @@ def random_image():
     classification = np.array(row[1:])
 
     return {"suggested_tags":predicted_tags(classification),
-            "classification_vector":base64.b64encode(np.ascontiguousarray(classification).data),
+            "classification_vector":base64.b64encode(np.ascontiguousarray(classification.astype(np.float32)).data),
             "image_url":download_url}

@@ -3,6 +3,8 @@ from whatsinmypics import app, model
 from flask import render_template, request, make_response 
 import json
 import os
+import numpy as np
+import base64
 
 @app.route("/")
 @app.route("/index.html")
@@ -29,7 +31,8 @@ def random_example():
 def search():
     tags = request.values.getlist('tags[]')
     classification_vector = request.values.get('classification_vector')
-    return make_response(json.dumps(model.predict_images(tags,classification_vector)))
+    classification = np.frombuffer(base64.b64decode(classification_vector), np.float32)
+    return make_response(json.dumps(model.predict_images(tags, classification)))
 
 @app.route("/slides")
 def slides():
