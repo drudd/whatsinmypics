@@ -1,7 +1,6 @@
 import whatsinmypics
 from whatsinmypics import app, model
 from flask import render_template, request, make_response 
-import base64
 import json
 import os
 import numpy as np
@@ -18,7 +17,9 @@ def classify():
     image = request.files['file']
     if image and valid_filename(image.filename):
         try:
-            return make_response(json.dumps(model.classify_image(image)))
+            image_response = model.classify_image(image)
+            image_response['classification_vector'] = base64.b64encode(np.ascontiguousarray(image_response['classification_vector'].astype(np.float32)))
+            return make_response(json.dumps(image_response))
         except IOError:
             return "Error: invalid file"
     else:
@@ -27,13 +28,14 @@ def classify():
 @app.route('/random', methods=['GET'])
 def random_example():
     image_response = model.random_image()
-    return make_response(json.dumps(image_response)
+    image_response['classification_vector'] = base64.b64encode(np.ascontiguousarray(image_response['classification_vector'].astype(np.float32)))
+    return make_response(json.dumps(image_response))
 
 @app.route('/search')
 def search():
     tags = request.values.getlist('tags[]')
     classification_vector = request.values.get('classification_vector')
-    classification_vector = np.frombuffer(base64.b64decode(classification_vector))
+    classification_vector = np.frombuffer(base64.b64decode(classification_vector), dtype=np.float32)
     return make_response(json.dumps(model.predict_images(tags, classification_vector)))
 
 @app.route("/slides")
