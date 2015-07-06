@@ -11,6 +11,7 @@ from nltk.stem import WordNetLemmatizer
 from PIL import Image
 import skimage
 from collections import defaultdict
+import random
 
 # load mean image
 ext = os.path.splitext(app.config['CNN_MEAN_FILE'])[1]
@@ -41,7 +42,8 @@ lda = models.LdaMulticore.load(app.config['LDA_MODEL_FILE'])
 word2id = {t:i for i,t in lda.id2word.items()}
 
 lda_index = similarities.MatrixSimilarity.load(app.config['LDA_INDEX_FILE'])
-lda_index.num_best = app.config['NUM_SUGGESTED_IMAGES']
+lda_index.num_best = app.config['NUM_SUGGESTED_IMAGES_SAMPLE']
+num_relevant = app.config["NUM_SUGGESTED_IMAGES"]
 lda_index_index = np.load(app.config['LDA_INDEX_INDEX_FILE'])
 
 lemma = WordNetLemmatizer()
@@ -80,7 +82,7 @@ def predict_images(tags, classification):
     doc = user_tags + class_tags
 
     # identify similar documents
-    photo_ids = [lda_index_index[doc_id] for doc_id, weight in lda_index[lda[doc]]]
+    photo_ids = [lda_index_index[doc_id] for doc_id, weight in random.sample(lda_index[lda[doc]], num_relevant)]
 
     result = db.engine.execute("""select download_url from yfcc
                                   where photo_id in ({})""".format(",".join(str(pid) for pid in photo_ids)))
@@ -89,7 +91,7 @@ def predict_images(tags, classification):
 def classify_image(image):
     image_path = image.filename
     image_data = np.array(Image.open(image.stream))
-    image_data = skimage.img_as_float(image_data).astype(np.float32)
+    image_data = skimage.img_as_float(image_data).astype(np.float2)
     with classifier_lock:
         classification = classifier.predict([image_data])[0]
         return {"suggested_tags":predicted_tags(classification),
